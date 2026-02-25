@@ -5,10 +5,17 @@ const http = require("http");
    🚀 HEALTH SERVER
 ========================= */
 
+const http = require("http");
+
+const PORT = process.env.PORT || 8080;
+
 http.createServer((req, res) => {
   res.statusCode = 200;
+  res.setHeader("Content-Type", "text/plain");
   res.end("OK");
-}).listen(process.env.PORT);
+}).listen(PORT, "0.0.0.0", () => {
+  console.log("🌐 HTTP ativo na porta", PORT);
+});
 
 /* =========================
    📦 DISCORD
