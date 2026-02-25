@@ -266,6 +266,16 @@ client.on("messageCreate", async (message) => {
   timeouts.set(logMsg.id, timeout);
 
   await message.reply("✅ Registro enviado para aprovação.");
+
+// 📩 Mensagem privada
+try {
+  await message.author.send(
+    "📋 Seu registro foi enviado para análise da staff.\n\n" +
+    "⏳ Aguarde a aprovação.\n" +
+    "Você será notificado assim que for aprovado ou reprovado."
+  );
+} catch (err) {
+  console.log("Não foi possível enviar DM para o usuário.");
 });
 
 /* =========================
