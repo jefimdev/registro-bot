@@ -1,13 +1,13 @@
 require("dotenv").config();
 const http = require("http");
 
-/* ================= HEALTH SERVER ================= */
+/* ===== HEALTH SERVER ===== */
 http.createServer((req, res) => {
   res.statusCode = 200;
   res.end("OK");
 }).listen(process.env.PORT || 8080, "0.0.0.0");
 
-/* ================= DISCORD ================= */
+/* ===== DISCORD ===== */
 const fs = require("fs");
 const path = require("path");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
@@ -24,14 +24,14 @@ const client = new Client({
 
 client.commands = new Map();
 
-/* Carregar comandos */
+/* ===== CARREGAR COMANDOS ===== */
 const commandsPath = path.join(__dirname, "commands");
 for (const file of fs.readdirSync(commandsPath)) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.data.name, command);
 }
 
-/* Carregar eventos */
+/* ===== CARREGAR EVENTOS ===== */
 const eventsPath = path.join(__dirname, "events");
 for (const file of fs.readdirSync(eventsPath)) {
   const event = require(`./events/${file}`);

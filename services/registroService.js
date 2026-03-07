@@ -3,7 +3,7 @@ const registros = new Map();
 module.exports = {
 
   criar(userId, channelId) {
-    registros.set(userId, { channelId });
+    registros.set(userId, { userId, channelId });
   },
 
   existe(userId) {
@@ -29,4 +29,5 @@ module.exports = {
   finalizar(userId) {
     registros.delete(userId);
   }
+
 };
