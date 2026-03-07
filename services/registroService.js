@@ -1,19 +1,19 @@
 const registros = new Map();
-const canaisAbertos = new Map();
-const timeouts = new Map();
 
 module.exports = {
 
   criar(userId, channelId) {
-    canaisAbertos.set(userId, channelId);
+    registros.set(userId, { channelId });
   },
 
   existe(userId) {
-    return canaisAbertos.has(userId);
+    return registros.has(userId);
   },
 
   salvarDados(userId, dados) {
-    registros.set(userId, { ...dados });
+    const r = registros.get(userId);
+    if (!r) return;
+    Object.assign(r, dados);
   },
 
   salvarFoto(userId, foto) {
@@ -28,17 +28,5 @@ module.exports = {
 
   finalizar(userId) {
     registros.delete(userId);
-    canaisAbertos.delete(userId);
-  },
-
-  setTimeout(msgId, timeout) {
-    timeouts.set(msgId, timeout);
-  },
-
-  clearTimeout(msgId) {
-    const t = timeouts.get(msgId);
-    if (t) clearTimeout(t);
-    timeouts.delete(msgId);
   }
-
 };
