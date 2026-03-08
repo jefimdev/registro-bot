@@ -77,29 +77,37 @@ module.exports = {
   if (interaction.customId === "aprovar")
     await membro.roles.add(process.env.MEMBER_ROLE_ID).catch(() => null);
 
-  /* ===== BAIXAR IMAGEM ===== */
-  const response = await axios.get(registro.foto.url, {
-    responseType: "arraybuffer"
-  });
+/* ===== BAIXAR IMAGEM ===== */
+const response = await axios.get(registro.foto.url, {
+  responseType: "arraybuffer"
+});
 
-  const file = new AttachmentBuilder(Buffer.from(response.data), {
-    name: registro.foto.name
-  });
+const file = new AttachmentBuilder(Buffer.from(response.data), {
+  name: registro.foto.name
+});
 
-  const embedLog = new EmbedBuilder()
-    .setTitle("📋 REGISTRO FINALIZADO")
-    .setDescription(
-      `ID: ${registro.id}\nNome: ${registro.nome}\nData: ${registro.data}\nRecrutador: ${registro.recrutador}`
-    )
-    .setImage(`attachment://${registro.foto.name}`)
-    .setFooter({ text: `Decisão por ${interaction.user.tag}` });
+const logChannel = await interaction.guild.channels.fetch(process.env.LOG_CHANNEL_ID);
 
-  const logChannel = await interaction.guild.channels.fetch(process.env.LOG_CHANNEL_ID);
+/* ===== ENVIA IMAGEM PRIMEIRO ===== */
+await logChannel.send({
+  files: [file]
+});
 
-  await logChannel.send({
-    embeds: [embedLog],
-    files: [file]
-  });
+/* ===== ENVIA EMBED SEPARADO ===== */
+const embedLog = new EmbedBuilder()
+  .setTitle("📋 REGISTRO FINALIZADO")
+  .setDescription(
+    `👤 Usuário: <@${registro.userId}>\n` +
+    `🧾 ID: ${registro.id}\n` +
+    `🎮 Nome: ${registro.nome}\n` +
+    `📅 Data: ${registro.data}\n` +
+    `🤝 Recrutador: ${registro.recrutador}`
+  )
+  .setFooter({ text: `Decisão por ${interaction.user.tag}` });
+
+await logChannel.send({
+  embeds: [embedLog]
+});
 
   await interaction.channel.send("🎉 Registro finalizado. Canal será fechado.");
 
