@@ -8,7 +8,7 @@ module.exports = {
 
     if (message.author.bot) return;
 
-    const registro = registroService.pegar(message.author.id);
+    const registro = registroService.pegarPorCanal(message.channel.id);
     if (!registro) return;
 
     if (!registro.foto) {
@@ -16,7 +16,12 @@ module.exports = {
       if (message.attachments.size === 0)
         return message.reply("❌ Envie a foto como ANEXO.");
 
-      registroService.salvarFoto(message.author.id, message.attachments.first().url);
+      const attachment = message.attachments.first();
+
+      registroService.salvarFoto(message.author.id, {
+        url: attachment.url,
+        name: attachment.name
+      });
 
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()

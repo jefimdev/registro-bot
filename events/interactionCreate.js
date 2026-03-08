@@ -1,3 +1,5 @@
+const axios = require("axios");
+const { AttachmentBuilder, EmbedBuilder } = require("discord.js");
 const registroService = require("../services/registroService");
 const {
   ModalBuilder,
@@ -64,35 +66,45 @@ module.exports = {
     /* ===== APROVAÇÃO ===== */
     if (interaction.isButton() && ["aprovar", "reprovar"].includes(interaction.customId)) {
 
-      if (!interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID))
-        return interaction.reply({ content: "❌ Apenas staff.", flags: 64 });
+  if (!interaction.member.roles.cache.has(process.env.STAFF_ROLE_ID))
+    return interaction.reply({ content: "❌ Apenas staff.", flags: 64 });
 
-      const registro = registroService.pegar(interaction.message.mentions.users.first()?.id);
-      if (!registro) return;
+  const registro = registroService.pegarPorCanal(interaction.channel.id);
+  if (!registro) return;
 
-      const membro = await interaction.guild.members.fetch(registro.userId);
+  const membro = await interaction.guild.members.fetch(registro.userId);
 
-      if (interaction.customId === "aprovar")
-        await membro.roles.add(process.env.MEMBER_ROLE_ID).catch(() => null);
+  if (interaction.customId === "aprovar")
+    await membro.roles.add(process.env.MEMBER_ROLE_ID).catch(() => null);
 
-      const logChannel = await interaction.guild.channels.fetch(process.env.LOG_CHANNEL_ID);
+  /* ===== BAIXAR IMAGEM ===== */
+  const response = await axios.get(registro.foto.url, {
+    responseType: "arraybuffer"
+  });
 
-      const embedLog = new EmbedBuilder()
-        .setTitle("📋 REGISTRO FINALIZADO")
-        .setDescription(
-          `ID: ${registro.id}\nNome: ${registro.nome}\nData: ${registro.data}\nRecrutador: ${registro.recrutador}`
-        )
-        .setImage(registro.foto)
-        .setFooter({ text: `Decisão por ${interaction.user.tag}` });
+  const file = new AttachmentBuilder(Buffer.from(response.data), {
+    name: registro.foto.name
+  });
 
-      await logChannel.send({ embeds: [embedLog] });
+  const embedLog = new EmbedBuilder()
+    .setTitle("📋 REGISTRO FINALIZADO")
+    .setDescription(
+      `ID: ${registro.id}\nNome: ${registro.nome}\nData: ${registro.data}\nRecrutador: ${registro.recrutador}`
+    )
+    .setImage(`attachment://${registro.foto.name}`)
+    .setFooter({ text: `Decisão por ${interaction.user.tag}` });
 
-      await interaction.channel.send("🎉 Registro finalizado. Canal será fechado.");
+  const logChannel = await interaction.guild.channels.fetch(process.env.LOG_CHANNEL_ID);
 
-      setTimeout(async () => {
-        await interaction.channel.delete().catch(() => null);
-        registroService.finalizar(registro.userId);
-      }, 5000);
-    }
-  }
-};
+  await logChannel.send({
+    embeds: [embedLog],
+    files: [file]
+  });
+
+  await interaction.channel.send("🎉 Registro finalizado. Canal será fechado.");
+
+  setTimeout(async () => {
+    await interaction.channel.delete().catch(() => null);
+    registroService.finalizar(interaction.channel.id);
+  }, 5000);
+}

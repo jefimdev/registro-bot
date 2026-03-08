@@ -3,31 +3,31 @@ const registros = new Map();
 module.exports = {
 
   criar(userId, channelId) {
-    registros.set(userId, { userId, channelId });
+    registros.set(channelId, { userId, channelId });
   },
 
   existe(userId) {
-    return registros.has(userId);
+    return [...registros.values()].some(r => r.userId === userId);
   },
 
   salvarDados(userId, dados) {
-    const r = registros.get(userId);
-    if (!r) return;
-    Object.assign(r, dados);
+    const registro = [...registros.values()].find(r => r.userId === userId);
+    if (!registro) return;
+    Object.assign(registro, dados);
   },
 
   salvarFoto(userId, foto) {
-    const r = registros.get(userId);
-    if (!r) return;
-    r.foto = foto;
+    const registro = [...registros.values()].find(r => r.userId === userId);
+    if (!registro) return;
+    registro.foto = foto; // agora salva objeto { url, name }
   },
 
-  pegar(userId) {
-    return registros.get(userId);
+  pegarPorCanal(channelId) {
+    return registros.get(channelId);
   },
 
-  finalizar(userId) {
-    registros.delete(userId);
+  finalizar(channelId) {
+    registros.delete(channelId);
   }
 
 };
